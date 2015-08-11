@@ -9,13 +9,13 @@ Easy! You can just download the binary from the command line:
 * Linux
 
 ```shell
-curl -sL https://github.com/upfluence/etcdenv/releases/download/v0.0.1/gh-downloader-linux-amd64 > etcdenv
+curl -sL https://github.com/upfluence/gh-downloader/releases/download/v0.0.1/gh-downloader-linux-amd64 > gh-downloader
 ```
 
 * OSX
 
 ```shell
-curl -sL https://github.com/upfluence//releases/download/v0.0.1/gh-downloader-darwin-amd64 > etcdenv
+curl -sL https://github.com/upfluence/gh-downloader/releases/download/v0.0.1/gh-downloader-darwin-amd64 > gh-downloader
 ```
 
 If you would prefer compile the binary (assuming buildtools and Go are
