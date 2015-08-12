@@ -51,11 +51,11 @@ tagged such as `bar-0.0.1`, `bar-0.1.0` and so on.
 you can download the latest release with:
 
 ```shell
-gh-downloader -a mybin -gh-token="GITHUB_TOKEN.." -o mybin  -repository upfluence/foo -s "bar-x.x.x"
+gh-downloader -a mybin -gh-token="GITHUB_TOKEN.." -o mybin  -repository upfluence/foo -s "bar-vx.x.x"
 ```
 
 you can also download the latest release with the major version 3
 
 ```shell
-gh-downloader -a mybin -gh-token="GITHUB_TOKEN.." -o mybin  -repository upfluence/foo -s "bar-3.x.x"
+gh-downloader -a mybin -gh-token="GITHUB_TOKEN.." -o mybin  -repository upfluence/foo -s "bar-v3.x.x"
 ```
