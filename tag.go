@@ -13,8 +13,27 @@ type Tag struct {
 }
 
 func NewTag(name string) *Tag {
-	splittedTagName := strings.Split(name, "-v")
-	splittedVersion := strings.Split(splittedTagName[1], ".")
+	splittedTagName := strings.Split(name, "-")
+	project := ""
+	version := ""
+
+	if len(splittedTagName) == 1 {
+		version = splittedTagName[0]
+	} else if len(splittedTagName) == 2 {
+		version = splittedTagName[1]
+	} else {
+		return nil
+	}
+
+	if version[0:1] == "v" {
+		version = version[1:]
+	}
+
+	splittedVersion := strings.Split(version, ".")
+
+	if len(splittedVersion) != 3 {
+		return nil
+	}
 
 	patch, err := strconv.Atoi(splittedVersion[2])
 	if err != nil {
@@ -31,7 +50,7 @@ func NewTag(name string) *Tag {
 		major = -1
 	}
 
-	return &Tag{splittedTagName[0], major, minor, patch}
+	return &Tag{project, major, minor, patch}
 }
 
 func (t1 *Tag) Less(t2 *Tag) bool {
@@ -48,8 +67,16 @@ func FilterReleases(releases Releases, scheme string) Releases {
 	filteredReleases := Releases{}
 	schemeTag := NewTag(scheme)
 
+	if schemeTag == nil {
+		return filteredReleases
+	}
+
 	for _, release := range releases {
 		r := NewTag(*release.TagName)
+
+		if r == nil {
+			continue
+		}
 
 		if r.Project == schemeTag.Project &&
 			(schemeTag.Major == -1 || schemeTag.Major == r.Major) &&
