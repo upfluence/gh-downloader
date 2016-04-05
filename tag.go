@@ -19,11 +19,9 @@ func NewTag(name string) *Tag {
 
 	if len(splittedTagName) == 1 {
 		version = splittedTagName[0]
-	} else if len(splittedTagName) == 2 {
-		project = splittedTagName[0]
-		version = splittedTagName[1]
 	} else {
-		return nil
+		project = strings.Join(splittedTagName[:len(splittedTagName)-1], "-")
+		version = splittedTagName[len(splittedTagName)-1]
 	}
 
 	if version[0:1] == "v" {
