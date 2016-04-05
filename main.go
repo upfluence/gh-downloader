@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const currentVersion = "0.0.2"
+const currentVersion = "0.0.3"
 
 var (
 	flagset = flag.NewFlagSet("gh-downloader", flag.ExitOnError)
