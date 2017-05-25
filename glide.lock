@@ -1,0 +1,34 @@
+hash: 2927879fe355cf59b2d43872059ae8db2c89df7c960317407cfead447ea95ae8
+updated: 2017-05-25T15:17:02.270475538-04:00
+imports:
+- name: github.com/golang/protobuf
+  version: 7a211bcf3bce0e3f1d74f9894916e6f116ae83b4
+  subpackages:
+  - proto
+- name: github.com/google/go-github
+  version: fccd5bb66f985db0a0d150342ca0a9529a23488a
+  subpackages:
+  - github
+- name: github.com/google/go-querystring
+  version: 547ef5ac979778feb2f760cdb5f4eae1a2207b86
+  subpackages:
+  - query
+- name: golang.org/x/net
+  version: d9558e5c97f85372afee28cf2b6059d7d3818919
+  subpackages:
+  - context
+- name: golang.org/x/oauth2
+  version: 8914e5017ca260f2a3a1575b1e6868874050d95e
+  subpackages:
+  - internal
+- name: google.golang.org/appengine
+  version: a2f4131514e563cedfdb6e7d267df9ad48591e93
+  subpackages:
+  - internal
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/remote_api
+  - internal/urlfetch
+  - urlfetch
+testImports: []
