@@ -5,14 +5,14 @@ import (
 	"strings"
 )
 
-type Tag struct {
+type tag struct {
 	Project string
 	Major   int
 	Minor   int
 	Patch   int
 }
 
-func NewTag(name string) *Tag {
+func newTag(name string) *tag {
 	splittedTagName := strings.Split(name, "-")
 	project := ""
 	version := ""
@@ -49,10 +49,10 @@ func NewTag(name string) *Tag {
 		major = -1
 	}
 
-	return &Tag{project, major, minor, patch}
+	return &tag{project, major, minor, patch}
 }
 
-func (t1 *Tag) Less(t2 *Tag) bool {
+func (t1 *tag) Less(t2 *tag) bool {
 	if t1.Project != t2.Project {
 		return false
 	}
@@ -62,16 +62,16 @@ func (t1 *Tag) Less(t2 *Tag) bool {
 		(t1.Major == t2.Major && t1.Minor == t2.Minor && t1.Patch < t2.Patch)
 }
 
-func FilterReleases(releases Releases, scheme string) Releases {
-	filteredReleases := Releases{}
-	schemeTag := NewTag(scheme)
+func filterReleases(rs releases, scheme string) releases {
+	var filteredReleases releases
+	schemeTag := newTag(scheme)
 
 	if schemeTag == nil {
 		return filteredReleases
 	}
 
-	for _, release := range releases {
-		r := NewTag(*release.TagName)
+	for _, release := range rs {
+		r := newTag(*release.TagName)
 
 		if r == nil {
 			continue
