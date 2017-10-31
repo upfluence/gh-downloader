@@ -1,28 +1,29 @@
-hash: 2927879fe355cf59b2d43872059ae8db2c89df7c960317407cfead447ea95ae8
-updated: 2017-05-25T15:17:02.270475538-04:00
+hash: b81885b9322719f0e7427a0ae6c1f73eca7cda2ad706706f7cb8b3870bade6a2
+updated: 2017-10-31T10:13:57.856318-04:00
 imports:
 - name: github.com/golang/protobuf
-  version: 7a211bcf3bce0e3f1d74f9894916e6f116ae83b4
+  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
   subpackages:
   - proto
 - name: github.com/google/go-github
-  version: fccd5bb66f985db0a0d150342ca0a9529a23488a
+  version: 724ae38c5030a22104e240636c81f7c3259d1e00
   subpackages:
   - github
 - name: github.com/google/go-querystring
-  version: 547ef5ac979778feb2f760cdb5f4eae1a2207b86
+  version: 53e6ce116135b80d037921a7fdd5138cf32d7a8a
   subpackages:
   - query
 - name: golang.org/x/net
-  version: d9558e5c97f85372afee28cf2b6059d7d3818919
+  version: c73622c77280266305273cb545f54516ced95b93
   subpackages:
   - context
+  - context/ctxhttp
 - name: golang.org/x/oauth2
-  version: 8914e5017ca260f2a3a1575b1e6868874050d95e
+  version: bb50c06baba3d0c76f9d125c0719093e315b5b44
   subpackages:
   - internal
 - name: google.golang.org/appengine
-  version: a2f4131514e563cedfdb6e7d267df9ad48591e93
+  version: a2e0dc829727a4f957a7428b1f322805cfc1f362
   subpackages:
   - internal
   - internal/base
