@@ -52,21 +52,29 @@ func (rs releases) Less(i, j int) bool {
 	return newTag(*rs[i].TagName).Less(newTag(*rs[j].TagName))
 }
 
-func downloadAsset(client *github.Client, asset *github.ReleaseAsset) error {
-	req, _ := client.NewRequest("GET", *asset.URL, nil)
-	req.Header.Set("Accept", "application/octet-stream")
-
-	apiResponse, err := client.Do(context.Background(), req, nil)
-
-	if err != nil {
-		return err
-	}
-
-	assetResponse, err := http.Get(apiResponse.Response.Request.URL.String())
+func downloadAsset(client *github.Client, org, repo string, asset *github.ReleaseAsset) error {
+	buf, loc, err := client.Repositories.DownloadReleaseAsset(
+		context.Background(),
+		org,
+		repo,
+		*asset.ID,
+	)
 
 	if err != nil {
 		return err
 	}
+
+	if buf == nil {
+		resp, err := http.Get(loc)
+
+		if err != nil {
+			return err
+		}
+
+		buf = resp.Body
+	}
+
+	defer buf.Close()
 
 	f, err := os.Create(flags.Output)
 
@@ -75,9 +83,10 @@ func downloadAsset(client *github.Client, asset *github.ReleaseAsset) error {
 	}
 
 	defer f.Close()
-	io.Copy(f, assetResponse.Body)
 
-	return nil
+	_, err = io.Copy(f, buf)
+
+	return err
 }
 
 func fetchReleasesByScheme(client *github.Client, org, repo, scheme string) (*github.RepositoryRelease, error) {
@@ -142,6 +151,9 @@ func main() {
 
 		release *github.RepositoryRelease
 		err     error
+
+		org  = splittedRepo[0]
+		repo = splittedRepo[1]
 	)
 
 	if len(splittedRepo) != 2 {
@@ -149,25 +161,20 @@ func main() {
 	}
 
 	if flags.Latest {
-		release, err = fetchLatestRelease(client, splittedRepo[0], splittedRepo[1])
+		release, err = fetchLatestRelease(client, org, repo)
 	} else {
-		release, err = fetchReleasesByScheme(
-			client,
-			splittedRepo[0],
-			splittedRepo[1],
-			flags.Scheme,
-		)
+		release, err = fetchReleasesByScheme(client, org, repo, flags.Scheme)
 	}
 
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	log.Printf("Release: %s", *release.Name)
+	log.Printf("Release: %s [ %s ] ", *release.Name, flags.Asset)
 
 	for _, asset := range release.Assets {
 		if *asset.Name == flags.Asset {
-			err := downloadAsset(client, &asset)
+			err := downloadAsset(client, org, repo, &asset)
 
 			if err != nil {
 				log.Fatalf(err.Error())
