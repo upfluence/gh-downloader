@@ -15,7 +15,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const currentVersion = "0.0.3"
+const currentVersion = "0.0.4"
 
 var (
 	flagset = flag.NewFlagSet("gh-downloader", flag.ExitOnError)
@@ -91,7 +91,7 @@ func downloadAsset(client *github.Client, org, repo string, asset *github.Releas
 
 func fetchReleasesByScheme(client *github.Client, org, repo, scheme string) (*github.RepositoryRelease, error) {
 	var (
-		opt = &github.ListOptions{PerPage: 20}
+		opt = &github.ListOptions{PerPage: 100}
 
 		allReleases []*github.RepositoryRelease
 	)
