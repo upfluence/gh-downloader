@@ -30,13 +30,21 @@ var (
 	}{}
 )
 
+func githubToken() string {
+	if tok := os.Getenv("UPF_GITHUB_TOKEN"); tok != "" {
+		return tok
+	}
+
+	return os.Getenv("GITHUB_TOKEN")
+}
+
 func init() {
 	flagset.BoolVar(&flags.Version, "version", false, "Print the version and exit")
 	flagset.BoolVar(&flags.Version, "v", false, "Print the Version and exit")
 
 	flagset.BoolVar(&flags.Latest, "latest", false, "Fetch the latest release")
 
-	flagset.StringVar(&flags.GHToken, "gh-token", os.Getenv("GITHUB_TOKEN"), "GitHub API token")
+	flagset.StringVar(&flags.GHToken, "gh-token", githubToken(), "GitHub API token")
 	flagset.StringVar(&flags.Asset, "a", "", "Asset name")
 	flagset.StringVar(&flags.Scheme, "s", "", "Scheme of the release")
 	flagset.StringVar(&flags.Output, "o", "", "Output location")
