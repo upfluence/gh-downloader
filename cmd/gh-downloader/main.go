@@ -56,8 +56,7 @@ type config struct {
 	GithubToken string     `env:"GITHUB_TOKEN,UPF_GITHUB_TOKEN" flag:"gh-token" help:"GitHub API token"`
 	Repository  repoConfig `flag:"repository,r" help:"Repository"`
 	Asset       string     `flag:"asset,a" help:"Asset name"`
-	Scheme      string     `flag:"scheme,s" help:"Scheme of the release"`
-	Latest      bool       `help:"Override the scheme and fetch the latest release"`
+	Scheme      string     `flag:"scheme,s" help:"Scheme of the release, if empty the latest release will be pulled"`
 	Output      string     `flag:"output,o" help:"Output location on disk, if left empty the file will be written on stdout"`
 	FileMode    fileMode   `flag:"mode" help:"File mode to create the output file in"`
 }
@@ -123,7 +122,7 @@ func main() {
 
 					cl := c.client(ctx)
 
-					if c.Latest {
+					if c.Scheme == "" {
 						release, err = fetchLatestRelease(cl, repo.owner, repo.repo)
 					} else {
 						release, err = fetchReleasesByScheme(cl, repo.owner, repo.repo, c.Scheme)

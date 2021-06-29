@@ -36,7 +36,6 @@ Arguments:
 	- Repository: main.repoConfig Repository (env: REPOSITORY, flag: --repository, -r)
 	- Asset: string Asset name (env: ASSET, flag: --asset, -a)
 	- Scheme: string Scheme of the release (env: SCHEME, flag: --scheme, -s)
-	- Latest: bool Override the scheme and fetch the latest release (env: LATEST, flag: --latest)
 	- Output: string Output location on disk, if left empty the file will be written on stdout (env: OUTPUT, flag: --output, -o)
 	- FileMode: main.fileMode File mode to create the output file in (default: 0644) (env: FILEMODE, flag: --mode)
 ```
