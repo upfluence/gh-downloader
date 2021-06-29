@@ -1,0 +1,33 @@
+name: 'gh-downloader'
+description: 'Download asset from a GitHub release according to a version scheme/template'
+inputs:
+  github-token:
+    description: 'github token to download the asset with'
+    required: true
+  repo:
+    description: 'what repo to downlaod the asset from'
+    required: true
+  asset:
+    description: 'the name of the asset of the release'
+    required: true
+  output:
+    description: 'where to output the asset'
+    required: true
+  mode:
+    description: 'the file mode of the file downloaded'
+    default: '0644'
+  scheme:
+    description: 'scheme of the release to pull the asset from (i.e. v1.x.x)'
+    default: ''
+runs:
+  using: "composite"
+  steps:
+    - run: curl -L https://github.com/upfluence/gh-downloader/releases/latest/download/gh-downloader-linux-amd64 > gh-downloader
+      shell: bash
+    - run: chmox +x gh-downloader
+      shell: bash
+    - run: ./gh-downloader -r ${{ inputs.repo }} -a ${{ inputs.asset }} -o ${{ inputs.output }} --mode ${{ inputs.mode }}
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        SCHEME: ${{ inputs.scheme }}
