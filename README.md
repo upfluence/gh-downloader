@@ -18,14 +18,11 @@ curl -sL https://github.com/upfluence/gh-downloader/releases/download/v0.0.1/gh-
 curl -sL https://github.com/upfluence/gh-downloader/releases/download/v0.0.1/gh-downloader-darwin-amd64 > gh-downloader
 ```
 
-If you would prefer compile the binary (assuming buildtools and Go are
-installed) :
+If you prefer compiling the binary (assuming buildtools and Go are
+installed):
 
 ```shell
-git clone git@github.com:upfluence/gh-downloader.git
-cd gh-downloader
-go get github.com/tools/godep
-GOPATH=`pwd`/Godeps/_workspace go build -o gh-downloader .
+go install github.com/upfluence/gh-downloader/cmd/gh-downloader
 ```
 
 ## Usage
@@ -33,14 +30,15 @@ GOPATH=`pwd`/Godeps/_workspace go build -o gh-downloader .
 ### Options
 
 ```
-Usage of gh-downloader:
-  -a="": Asset name
-  -gh-token="": GitHub API token
-  -o="": Output location
-  -repository="": Repository
-  -s="": Scheme of the release
-  -v=false: Print the Version and exit
-  -version=false: Print the version and exit
+usage: gh-downloader [--gh-token] [--repository, -r] [--asset, -a] [--scheme, -s] [--latest] [--output, -o] [--mode]
+Arguments:
+	- GithubToken: string GitHub API token (env: GITHUB_TOKEN, UPF_GITHUB_TOKEN, flag: --gh-token)
+	- Repository: main.repoConfig Repository (env: REPOSITORY, flag: --repository, -r)
+	- Asset: string Asset name (env: ASSET, flag: --asset, -a)
+	- Scheme: string Scheme of the release (env: SCHEME, flag: --scheme, -s)
+	- Latest: bool Override the scheme and fetch the latest release (env: LATEST, flag: --latest)
+	- Output: string Output location on disk, if left empty the file will be written on stdout (env: OUTPUT, flag: --output, -o)
+	- FileMode: main.fileMode File mode to create the output file in (default: 0644) (env: FILEMODE, flag: --mode)
 ```
 
 ### Example
