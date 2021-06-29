@@ -9,13 +9,13 @@ Easy! You can just download the binary from the command line:
 * Linux
 
 ```shell
-curl -sL https://github.com/upfluence/gh-downloader/releases/download/v0.0.1/gh-downloader-linux-amd64 > gh-downloader
+curl -sL https://github.com/upfluence/gh-downloader/releases/download/v0.1.0/gh-downloader-linux-amd64 > gh-downloader
 ```
 
 * OSX
 
 ```shell
-curl -sL https://github.com/upfluence/gh-downloader/releases/download/v0.0.1/gh-downloader-darwin-amd64 > gh-downloader
+curl -sL https://github.com/upfluence/gh-downloader/releases/download/v0.1.0/gh-downloader-darwin-amd64 > gh-downloader
 ```
 
 If you prefer compiling the binary (assuming buildtools and Go are
@@ -27,7 +27,9 @@ go install github.com/upfluence/gh-downloader/cmd/gh-downloader
 
 ## Usage
 
-### Options
+### CLI
+
+#### Options
 
 ```
 usage: gh-downloader [--gh-token] [--repository, -r] [--asset, -a] [--scheme, -s] [--latest] [--output, -o] [--mode]
@@ -40,7 +42,7 @@ Arguments:
 	- FileMode: main.fileMode File mode to create the output file in (default: 0644) (env: FILEMODE, flag: --mode)
 ```
 
-### Example
+#### Example
 
 Let's say you have a repositiory `upfluence/foo` and all the release are
 tagged such as `bar-0.0.1`, `bar-0.1.0` and so on.
@@ -55,4 +57,20 @@ you can also download the latest release with the major version 3
 
 ```shell
 gh-downloader -a mybin -gh-token="GITHUB_TOKEN.." -o mybin  -repository upfluence/foo -s "bar-v3.x.x"
+```
+
+### GitHub Action
+
+```
+on: push
+jobs:
+  gh-downloader:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: upfluence/gh-downloader@master
+      with:
+        repo: upfluence/ubuild
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        asset: ubuild-linux-amd64
+        output: ~/gh-action
 ```
