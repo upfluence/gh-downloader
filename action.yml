@@ -24,7 +24,7 @@ runs:
   steps:
     - run: curl -L https://github.com/upfluence/gh-downloader/releases/latest/download/gh-downloader-linux-amd64 > gh-downloader
       shell: bash
-    - run: chmox +x gh-downloader
+    - run: chmod +x gh-downloader
       shell: bash
     - run: ./gh-downloader -r ${{ inputs.repo }} -a ${{ inputs.asset }} -o ${{ inputs.output }} --mode ${{ inputs.mode }}
       shell: bash
