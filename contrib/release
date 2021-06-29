@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -exv
+set -v
 
 version=$1
 

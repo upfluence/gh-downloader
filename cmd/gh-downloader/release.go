@@ -73,7 +73,11 @@ func fetchReleasesByScheme(client *github.Client, org, repo, scheme string) (*gi
 	filteredReleases := filterReleases(releases(allReleases), scheme)
 
 	if len(filteredReleases) == 0 {
-		return nil, fmt.Errorf("No release matchs to your scheme")
+		return nil, fmt.Errorf(
+			"No release match the scheme: %q out of %d releases",
+			scheme,
+			len(allReleases),
+		)
 	}
 
 	sort.Sort(filteredReleases)

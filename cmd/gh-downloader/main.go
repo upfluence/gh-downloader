@@ -122,10 +122,17 @@ func main() {
 
 					cl := c.client(ctx)
 
-					if c.Scheme == "" {
+					if scheme := strings.TrimSpace(c.Scheme); scheme == "" {
+						fmt.Fprintf(cctx.Stdout, "Fetching latest release of %v", repo)
 						release, err = fetchLatestRelease(cl, repo.owner, repo.repo)
 					} else {
-						release, err = fetchReleasesByScheme(cl, repo.owner, repo.repo, c.Scheme)
+						fmt.Fprintf(
+							cctx.Stdout,
+							"Fetching release of %v matching scheme %q",
+							repo,
+							scheme,
+						)
+						release, err = fetchReleasesByScheme(cl, repo.owner, repo.repo, scheme)
 					}
 
 					if err != nil {
