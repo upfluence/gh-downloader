@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -exv
+
+version=$1
+
+git tag v$version
+git push --tag
+
+GOOS=linux CGO_ENABLED=0 GOARCH=amd64 go build \
+  -o gh-downloader-linux-amd64 \
+  -ldflags "-s -X github.com/upfluence/cfg/x/cli.Version=$version" \
+  github.com/upfluence/gh-downloader/cmd/gh-downloader
+
+GOOS=darwin CGO_ENABLED=0 GOARCH=amd64 go build \
+  -o gh-downloader-darwin-amd64 \
+  -ldflags "-s -X github.com/upfluence/cfg/x/cli.Version=$version" \
+  github.com/upfluence/gh-downloader/cmd/gh-downloader
+
+hub release create -a gh-downloader-linux-amd64 -a gh-downloader-darwin-amd64 v$version
+
+rm gh-downloader-*
