@@ -1,19 +1,30 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"strings"
+	"text/template"
 
 	"github.com/google/go-github/github"
 	"github.com/upfluence/cfg/x/cli"
 	"golang.org/x/oauth2"
 )
 
-var defaultConfig = config{FileMode: 0644}
+const assetFmt = "{{ .repo }}-{{ .os }}-{{ .arch }}-{{ .tag }}"
+
+var defaultConfig = config{
+	FileMode: 0644,
+	Asset: templateConfig{
+		t:   template.Must(template.New("").Parse(assetFmt)),
+		fmt: assetFmt,
+	},
+}
 
 type fileMode os.FileMode
 
@@ -52,13 +63,31 @@ func (rc repoConfig) String() string {
 	return fmt.Sprintf("%s/%s", rc.owner, rc.repo)
 }
 
+type templateConfig struct {
+	t   *template.Template
+	fmt string
+}
+
+func (tc *templateConfig) Parse(v string) error {
+	t, err := template.New("").Parse(v)
+
+	if err == nil {
+		tc.t = t
+		tc.fmt = v
+	}
+
+	return err
+}
+
+func (tc templateConfig) String() string { return tc.fmt }
+
 type config struct {
-	GithubToken string     `env:"GITHUB_TOKEN,UPF_GITHUB_TOKEN" flag:"gh-token" help:"GitHub API token"`
-	Repository  repoConfig `flag:"repository,r" help:"Repository"`
-	Asset       string     `flag:"asset,a" help:"Asset name"`
-	Scheme      string     `flag:"scheme,s" help:"Scheme of the release, if empty the latest release will be pulled"`
-	Output      string     `flag:"output,o" help:"Output location on disk, if left empty the file will be written on stdout"`
-	FileMode    fileMode   `flag:"mode" help:"File mode to create the output file in"`
+	GithubToken string         `env:"GITHUB_TOKEN,UPF_GITHUB_TOKEN" flag:"gh-token" help:"GitHub API token"`
+	Repository  repoConfig     `flag:"repository,r" help:"Repository"`
+	Asset       templateConfig `flag:"asset,a" help:"Asset name, it can be given as a go template with variable including: .tag, .repo, .arch, .os"`
+	Scheme      string         `flag:"scheme,s" help:"Scheme of the release, if empty the latest release will be pulled"`
+	Output      string         `flag:"output,o" help:"Output location on disk, if left empty the file will be written on stdout"`
+	FileMode    fileMode       `flag:"mode" help:"File mode to create the output file in"`
 }
 
 func (c *config) client(ctx context.Context) *github.Client {
@@ -139,17 +168,42 @@ func main() {
 						return err
 					}
 
-					fmt.Fprintf(cctx.Stdout, "Release: %s [%s]\n", *release.Name, c.Asset)
+					assetName, err := templateAssetName(&c, release)
+
+					if err != nil {
+						return err
+					}
+
+					fmt.Fprintf(cctx.Stdout, "Release: %s [%s]\n", *release.Name, assetName)
 
 					for _, asset := range release.Assets {
-						if *asset.Name == c.Asset {
+						if *asset.Name == assetName {
 							return downloadAsset(w, cl, repo.owner, repo.repo, &asset)
 						}
 					}
 
-					return fmt.Errorf("No assets are named %q", c.Asset)
+					return fmt.Errorf("No assets are named %q", assetName)
 				},
 			},
 		),
 	).Run(context.Background())
+}
+
+func templateAssetName(c *config, r *github.RepositoryRelease) (string, error) {
+	var buf bytes.Buffer
+
+	if err := c.Asset.t.Execute(
+		&buf,
+		map[string]string{
+			"repo":  c.Repository.repo,
+			"owner": c.Repository.owner,
+			"tag":   *r.TagName,
+			"os":    runtime.GOOS,
+			"arch":  runtime.GOARCH,
+		},
+	); err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
 }
