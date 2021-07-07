@@ -16,7 +16,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const assetFmt = "{{ .repo }}-{{ .os }}-{{ .arch }}-{{ .tag }}"
+const assetFmt = "{{ .repo }}-{{ .os }}-{{ .arch }}-{{ .version }}"
 
 var defaultConfig = config{
 	FileMode: 0644,
@@ -84,7 +84,7 @@ func (tc templateConfig) String() string { return tc.fmt }
 type config struct {
 	GithubToken string         `env:"GITHUB_TOKEN,UPF_GITHUB_TOKEN" flag:"gh-token" help:"GitHub API token"`
 	Repository  repoConfig     `flag:"repository,r" help:"Repository"`
-	Asset       templateConfig `flag:"asset,a" help:"Asset name, it can be given as a go template with variable including: .tag, .repo, .arch, .os"`
+	Asset       templateConfig `flag:"asset,a" help:"Asset name, it can be given as a go template with variable including: .tag, .repo, .arch, .os, .version"`
 	Scheme      string         `flag:"scheme,s" help:"Scheme of the release, if empty the latest release will be pulled"`
 	Output      string         `flag:"output,o" help:"Output location on disk, if left empty the file will be written on stdout"`
 	FileMode    fileMode       `flag:"mode" help:"File mode to create the output file in"`
@@ -195,11 +195,12 @@ func templateAssetName(c *config, r *github.RepositoryRelease) (string, error) {
 	if err := c.Asset.t.Execute(
 		&buf,
 		map[string]string{
-			"repo":  c.Repository.repo,
-			"owner": c.Repository.owner,
-			"tag":   *r.TagName,
-			"os":    runtime.GOOS,
-			"arch":  runtime.GOARCH,
+			"repo":    c.Repository.repo,
+			"owner":   c.Repository.owner,
+			"tag":     *r.TagName,
+			"os":      runtime.GOOS,
+			"arch":    runtime.GOARCH,
+			"version": strings.TrimPrefix(*r.TagName, "v"),
 		},
 	); err != nil {
 		return "", err
