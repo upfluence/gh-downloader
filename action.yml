@@ -9,7 +9,7 @@ inputs:
     required: true
   asset:
     description: 'the name of the asset of the release'
-    required: true
+    default: '{{ .repo }}-{{ .os }}-{{ .arch }}-{{ .version }}'
   output:
     description: 'where to output the asset'
     required: true
