@@ -1,7 +1,7 @@
 package main
 
 import (
-	"strconv"
+	"fmt"
 	"strings"
 )
 
@@ -13,43 +13,29 @@ type tag struct {
 }
 
 func newTag(name string) *tag {
-	splittedTagName := strings.Split(name, "-")
-	project := ""
-	version := ""
+	var (
+		t tag
 
-	if len(splittedTagName) == 1 {
-		version = splittedTagName[0]
-	} else {
-		project = strings.Join(splittedTagName[:len(splittedTagName)-1], "-")
+		version = name
+	)
+
+	if splittedTagName := strings.Split(name, "-"); len(splittedTagName) > 1 {
+		t.Project = strings.Join(splittedTagName[:len(splittedTagName)-1], "-")
 		version = splittedTagName[len(splittedTagName)-1]
 	}
 
-	if version[0:1] == "v" {
-		version = version[1:]
-	}
-
-	splittedVersion := strings.Split(version, ".")
-
-	if len(splittedVersion) != 3 {
+	if n, err := fmt.Sscanf(
+		version,
+		"%d.%d.%d",
+		strings.TrimPrefix(version, "v"),
+		&t.Major,
+		&t.Minor,
+		&t.Patch,
+	); n != 3 || err != nil {
 		return nil
 	}
 
-	patch, err := strconv.Atoi(splittedVersion[2])
-	if err != nil {
-		patch = -1
-	}
-
-	minor, err := strconv.Atoi(splittedVersion[1])
-	if err != nil {
-		minor = -1
-	}
-
-	major, err := strconv.Atoi(splittedVersion[0])
-	if err != nil {
-		major = -1
-	}
-
-	return &tag{project, major, minor, patch}
+	return &t
 }
 
 func (t1 *tag) Less(t2 *tag) bool {
