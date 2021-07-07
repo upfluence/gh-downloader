@@ -26,8 +26,9 @@ runs:
       shell: bash
     - run: chmod +x gh-downloader
       shell: bash
-    - run: ./gh-downloader -r ${{ inputs.repo }} -a ${{ inputs.asset }} -o ${{ inputs.output }} --mode ${{ inputs.mode }}
+    - run: ./gh-downloader -r ${{ inputs.repo }} -o ${{ inputs.output }} --mode ${{ inputs.mode }}
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         SCHEME: ${{ inputs.scheme }}
+        ASSET: ${{ inputs.asset }}
