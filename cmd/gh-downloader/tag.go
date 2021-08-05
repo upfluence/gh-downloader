@@ -25,9 +25,8 @@ func newTag(name string) *tag {
 	}
 
 	if n, err := fmt.Sscanf(
-		version,
-		"%d.%d.%d",
 		strings.TrimPrefix(version, "v"),
+		"%d.%d.%d",
 		&t.Major,
 		&t.Minor,
 		&t.Patch,
