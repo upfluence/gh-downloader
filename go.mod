@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/google/go-github v13.0.1-0.20171030212440-724ae38c5030+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/stretchr/testify v1.6.1
 	github.com/upfluence/cfg v0.2.3
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 )
