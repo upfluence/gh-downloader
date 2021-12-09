@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var versionRe = regexp.MustCompile(`((\w+)-)?v?(\d|x).(\d|x).(\d|x)(-(\w+))?`)
+var versionRe = regexp.MustCompile(`((\w+)-)?v?(\d+|x).(\d+|x).(\d+|x)(-(\w+))?`)
 
 type tag struct {
 	Project string
