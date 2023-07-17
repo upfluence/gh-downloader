@@ -49,9 +49,9 @@ jobs:
             ${{ runner.os }}-go-
       - name: Bump version
         id: bump-version
-        uses: upfluence/actions/bump-version
+        uses: upfluence/actions/bump-version@master
       - name: Compile binaries
-        uses: upfluence/actions/compile-go
+        uses: upfluence/actions/compile-go@master
         with:
           executable-paths: ./cmd/gh-downloader
           linker-mode: cli
@@ -61,7 +61,7 @@ jobs:
           arch: amd64,arm64
           name-template: '{{ .Name }}-{{ .OS }}-{{ .Arch }}'
       - name: Create release
-        uses: upfluence/actions/create-github-release
+        uses: upfluence/actions/create-github-release@master
         with:
           attachments: dist/*
           version: ${{ steps.bump-version.outputs.version }}
