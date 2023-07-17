@@ -10,23 +10,58 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        go: [ '1.16.x', '1.15.x', '1.14.x' ]
-
     steps:
-      - name: Install Go ${{ matrix.go }}
-        uses: actions/setup-go@v2
+      - name: Install Go
+        uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.go }}
+          go-version: 1.20.x
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Cache Modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-v1-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Run tests
-        run: go test -p 1 -v ./...
+        run: go test -v ./...
+  release:
+    name: Release
+    runs-on: ubuntu-20.04
+    needs: test
+    permissions:
+      contents: write
+    if: contains('refs/heads/master', github.ref)
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.20.x
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Cache Modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-v1-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Bump version
+        id: bump-version
+        uses: upfluence/actions/bump-version
+      - name: Compile binaries
+        uses: upfluence/actions/compile-go
+        with:
+          executable-paths: ./cmd/gh-downloader
+          linker-mode: cli
+          dist-dir: dist/
+          version: ${{ steps.bump-version.outputs.version }}
+          os: linux,darwin
+          arch: amd64,arm64
+          name-template: '{{ .Name }}-{{ .OS }}-{{ .Arch }}'
+      - name: Create release
+        uses: upfluence/actions/create-github-release
+        with:
+          attachments: dist/*
+          version: ${{ steps.bump-version.outputs.version }}
