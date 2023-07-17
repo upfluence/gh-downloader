@@ -88,6 +88,7 @@ type config struct {
 	Scheme      string         `flag:"scheme,s" help:"Scheme of the release, if empty the latest release will be pulled"`
 	Output      string         `flag:"output,o" help:"Output location on disk, if left empty the file will be written on stdout"`
 	FileMode    fileMode       `flag:"mode" help:"File mode to create the output file in"`
+	IfNotExist  bool           `flag:"if-not-exist" env:"IF_NOT_EXIST"`
 }
 
 func (c *config) client(ctx context.Context) *github.Client {
@@ -141,6 +142,18 @@ func main() {
 						return errors.New("no repository provided")
 					}
 
+					if c.IfNotExist {
+						_, err := os.Stat(c.Output)
+
+						switch {
+						case err == nil:
+							return nil
+						case os.IsNotExist(err):
+						default:
+							return err
+						}
+					}
+
 					w, err := c.output(cctx)
 
 					if err != nil {
@@ -151,7 +164,7 @@ func main() {
 
 					cl := c.client(ctx)
 
-					if scheme := strings.TrimSpace(c.Scheme); scheme == "" {
+					if scheme := strings.TrimSpace(c.Scheme); scheme == "" || scheme == "latest" {
 						fmt.Fprintf(cctx.Stdout, "Fetching latest release of %v\n", repo)
 						release, err = fetchLatestRelease(cl, repo.owner, repo.repo)
 					} else {
