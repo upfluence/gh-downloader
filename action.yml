@@ -3,7 +3,8 @@ description: 'Download asset from a GitHub release according to a version scheme
 inputs:
   github-token:
     description: 'github token to download the asset with'
-    required: true
+    required: false
+    default: ${{ github.token }}
   repo:
     description: 'what repo to downlaod the asset from'
     required: true
@@ -18,17 +19,19 @@ inputs:
     default: '0644'
   scheme:
     description: 'scheme of the release to pull the asset from (i.e. v1.x.x)'
-    default: ''
+    default: 'latest'
+  if-not-exist:
+    description: 'only download if the file does not already exist'
+    default: 'true'
 runs:
   using: "composite"
   steps:
-    - run: curl -L https://github.com/upfluence/gh-downloader/releases/latest/download/gh-downloader-linux-amd64 > gh-downloader
+    - run: install-cli.sh
       shell: bash
-    - run: chmod +x gh-downloader
-      shell: bash
-    - run: ./gh-downloader -r ${{ inputs.repo }} -o ${{ inputs.output }} --mode ${{ inputs.mode }}
+    - run: gh-downloader -r ${{ inputs.repo }} -o ${{ inputs.output }} --mode ${{ inputs.mode }}
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         SCHEME: ${{ inputs.scheme }}
         ASSET: ${{ inputs.asset }}
+        IF_NOT_EXIST: ${{ inputs.if-not-exist }}
