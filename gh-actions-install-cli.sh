@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[ "$DEBUG" == "true" ] && set -x
+[ "$DEBUG" == "true" ] && set -xv
 
 version=`gh release view -R upfluence/gh-downloader --json tagName -t '{{.tagName}}'`
 
@@ -10,7 +10,7 @@ force_download=${FORCE_DOWNLOAD:-"false"}
 
 if [ ! -f "$target_path" ] || [ "$force_download" == "true" ]; then
 	mkdir -p $target_dir
-	curl -L https://github.com/upfluence/gh-downloader/releases/$version/download/gh-downloader-linux-amd64 > $target_path
+	curl -L https://github.com/upfluence/gh-downloader/releases/download/$version/gh-downloader-linux-amd64 > $target_path
 	chmod +x $target_path
 fi
 
