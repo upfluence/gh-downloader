@@ -9,6 +9,7 @@ target_path="${target_dir}/gh-downloader"
 force_download=${FORCE_DOWNLOAD:-"false"}
 
 if [ ! -f "$target_path" ] || [ "$force_download" == "true" ]; then
+	mkdir -p $target_dir
 	curl -L https://github.com/upfluence/gh-downloader/releases/$version/download/gh-downloader-linux-amd64 > $target_path
 	chmod +x $target_path
 fi
