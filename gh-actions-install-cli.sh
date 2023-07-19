@@ -2,7 +2,7 @@
 
 [ "$DEBUG" == "true" ] && set -x
 
-version=`gh release view -R upfluence/upfluence-if --json tagName -t '{{.tagName}}'`
+version=`gh release view -R upfluence/gh-downloader --json tagName -t '{{.tagName}}'`
 
 target_dir="${RUNNER_TOOL_CACHE}/gh-downloader/${version}/${RUNNER_ARCH}"
 target_path="${target_dir}/gh-downloader"
