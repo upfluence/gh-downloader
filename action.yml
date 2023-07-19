@@ -28,6 +28,8 @@ runs:
   steps:
     - run: $GITHUB_ACTION_PATH/gh-actions-install-cli.sh
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
     - run: gh-downloader -r ${{ inputs.repo }} -o ${{ inputs.output }} --mode ${{ inputs.mode }}
       shell: bash
       env:
