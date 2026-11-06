@@ -4,16 +4,18 @@ on: [pull_request]
 jobs:
   lint:
     name: runner / golangci-lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.16.x
+          go-version: 1.27.x
+          cache: false
       - name: Check out code
-        uses: actions/checkout@v1
+        uses: actions/checkout@v6
       - name: golanci-lint
         uses: upfluence/action-golangci-lint@master
         with:
           github_token: ${{ secrets.github_token }}
+          go-version: 1.27.x
