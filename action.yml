@@ -23,6 +23,12 @@ inputs:
   if-not-exist:
     description: 'only download if the file does not already exist'
     default: 'true'
+  verify-mode:
+    description: 'how to verify the asset before writing it: none, checksum'
+    default: 'none'
+  verify-checksum-sum:
+    description: 'expected SHA-256 of the asset when verify-mode is checksum'
+    default: ''
 runs:
   using: "composite"
   steps:
@@ -37,3 +43,5 @@ runs:
         SCHEME: ${{ inputs.scheme }}
         ASSET: ${{ inputs.asset }}
         IF_NOT_EXIST: ${{ inputs.if-not-exist }}
+        VERIFY_MODE: ${{ inputs.verify-mode }}
+        VERIFY_CHECKSUM_SUM: ${{ inputs.verify-checksum-sum }}
