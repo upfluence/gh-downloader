@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"runtime"
 	"strings"
@@ -110,24 +109,6 @@ func (c *config) releaseClient() (*releaseClient, error) {
 	}, nil
 }
 
-func (c *config) output(cctx cli.CommandContext) (io.WriteCloser, error) {
-	if c.Output == "" {
-		return nopCloser{Writer: cctx.Stdout}, nil
-	}
-
-	return os.OpenFile(
-		c.Output,
-		os.O_RDWR|os.O_CREATE|os.O_TRUNC,
-		os.FileMode(c.FileMode),
-	)
-}
-
-type nopCloser struct {
-	io.Writer
-}
-
-func (nopCloser) Close() error { return nil }
-
 func main() {
 	cli.NewApp(
 		cli.WithName("gh-downloader"),
@@ -164,14 +145,6 @@ func main() {
 						}
 					}
 
-					w, err := c.output(cctx)
-
-					if err != nil {
-						return err
-					}
-
-					defer w.Close()
-
 					cl, err := c.releaseClient()
 
 					if err != nil {
@@ -179,12 +152,12 @@ func main() {
 					}
 
 					if scheme := strings.TrimSpace(c.Scheme); scheme == "" || scheme == "latest" {
-						fmt.Fprintf(cctx.Stdout, "Fetching latest release of %v\n", repo)
+						fmt.Fprintf(cctx.Stderr, "Fetching latest release of %v\n", repo)
 
 						release, err = cl.latestRelease(ctx)
 					} else {
 						fmt.Fprintf(
-							cctx.Stdout,
+							cctx.Stderr,
 							"Fetching release of %v matching scheme %q\n",
 							repo,
 							scheme,
@@ -203,23 +176,18 @@ func main() {
 						return err
 					}
 
-					fmt.Fprintf(cctx.Stdout, "Release: %s [%s]\n", release.GetName(), assetName)
+					fmt.Fprintf(cctx.Stderr, "Release: %s [%s]\n", release.GetName(), assetName)
 
 					for _, asset := range release.Assets {
 						if asset.GetName() == assetName {
-							rc, err := cl.openAsset(ctx, asset)
-
-							if err != nil {
-								return err
-							}
-
-							defer rc.Close()
-
-							if _, err := io.Copy(w, rc); err != nil {
-								return fmt.Errorf("write asset: %w", err)
-							}
-
-							return nil
+							return downloadAsset(
+								ctx,
+								cl,
+								asset,
+								c.Output,
+								os.FileMode(c.FileMode),
+								cctx.Stdout,
+							)
 						}
 					}
 
