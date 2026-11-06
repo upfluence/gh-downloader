@@ -20,42 +20,66 @@ type dirEntry struct {
 }
 
 func TestWriteAsset(t *testing.T) {
-	errRead := errors.New("connection reset")
+	var (
+		errRead = errors.New("connection reset")
+
+		mismatch = checksumVerifier(sumOf("other"))
+	)
 
 	for _, tt := range []struct {
-		name       string
-		haveReader io.Reader
-		haveOutput string
-		wantErr    error
-		wantStdout string
-		wantFiles  map[string]dirEntry
+		name         string
+		haveReader   io.Reader
+		haveOutput   string
+		haveVerifier verifier
+		wantErr      error
+		wantStdout   string
+		wantFiles    map[string]dirEntry
 	}{
 		{
-			name:       "write to the output file",
-			haveReader: strings.NewReader(assetContent),
-			haveOutput: "tool",
+			name:         "write to the output file",
+			haveReader:   strings.NewReader(assetContent),
+			haveOutput:   "tool",
+			haveVerifier: noopVerifier,
 			wantFiles: map[string]dirEntry{
 				"tool": {Mode: 0o640, Content: assetContent},
 			},
 		},
 		{
-			name:       "write to stdout",
-			haveReader: strings.NewReader(assetContent),
-			wantStdout: assetContent,
-			wantFiles:  map[string]dirEntry{},
+			name:         "write to stdout",
+			haveReader:   strings.NewReader(assetContent),
+			haveVerifier: noopVerifier,
+			wantStdout:   assetContent,
+			wantFiles:    map[string]dirEntry{},
 		},
 		{
-			name:       "failed download leaves no file",
-			haveReader: io.MultiReader(strings.NewReader("bin"), iotest.ErrReader(errRead)),
-			haveOutput: "asset",
-			wantErr:    errRead,
-			wantFiles:  map[string]dirEntry{},
+			name:         "checksum mismatch leaves no file",
+			haveReader:   strings.NewReader(assetContent),
+			haveOutput:   "asset",
+			haveVerifier: mismatch,
+			wantErr:      errChecksumMismatch,
+			wantFiles:    map[string]dirEntry{},
 		},
 		{
-			name:       "failed download writes nothing to stdout",
-			haveReader: io.MultiReader(strings.NewReader("bin"), iotest.ErrReader(errRead)),
-			wantErr:    errRead,
-			wantFiles:  map[string]dirEntry{},
+			name:         "checksum mismatch writes nothing to stdout",
+			haveReader:   strings.NewReader(assetContent),
+			haveVerifier: mismatch,
+			wantErr:      errChecksumMismatch,
+			wantFiles:    map[string]dirEntry{},
+		},
+		{
+			name:         "failed download leaves no file",
+			haveReader:   io.MultiReader(strings.NewReader("bin"), iotest.ErrReader(errRead)),
+			haveOutput:   "asset",
+			haveVerifier: noopVerifier,
+			wantErr:      errRead,
+			wantFiles:    map[string]dirEntry{},
+		},
+		{
+			name:         "failed download writes nothing to stdout",
+			haveReader:   io.MultiReader(strings.NewReader("bin"), iotest.ErrReader(errRead)),
+			haveVerifier: noopVerifier,
+			wantErr:      errRead,
+			wantFiles:    map[string]dirEntry{},
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
@@ -72,7 +96,13 @@ func TestWriteAsset(t *testing.T) {
 				output = filepath.Join(dir, tt.haveOutput)
 			}
 
-			err := writeAsset(tt.haveReader, output, 0o640, &stdout)
+			err := writeAsset(
+				tt.haveReader,
+				output,
+				0o640,
+				&stdout,
+				tt.haveVerifier,
+			)
 
 			require.ErrorIs(t, err, tt.wantErr)
 			assert.Equal(t, tt.wantStdout, stdout.String())

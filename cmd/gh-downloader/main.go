@@ -87,6 +87,7 @@ type config struct {
 	Output      string         `flag:"output,o" help:"Output location on disk, if left empty the file will be written on stdout"`
 	FileMode    fileMode       `flag:"mode" help:"File mode to create the output file in"`
 	IfNotExist  bool           `flag:"if-not-exist" env:"IF_NOT_EXIST"`
+	Verify      verifyConfig   `flag:"verify"`
 }
 
 func (c *config) releaseClient() (*releaseClient, error) {
@@ -131,6 +132,12 @@ func main() {
 
 					if repo.isZero() {
 						return errors.New("no repository provided")
+					}
+
+					v, err := c.Verify.verifier()
+
+					if err != nil {
+						return err
 					}
 
 					if c.IfNotExist {
@@ -187,6 +194,7 @@ func main() {
 								c.Output,
 								os.FileMode(c.FileMode),
 								cctx.Stdout,
+								v,
 							)
 						}
 					}

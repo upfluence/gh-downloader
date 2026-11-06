@@ -10,7 +10,7 @@ import (
 	"github.com/google/go-github/v93/github"
 )
 
-func downloadAsset(ctx context.Context, cl *releaseClient, asset *github.ReleaseAsset, output string, mode os.FileMode, stdout io.Writer) error {
+func downloadAsset(ctx context.Context, cl *releaseClient, asset *github.ReleaseAsset, output string, mode os.FileMode, stdout io.Writer, v verifier) error {
 	rc, err := cl.openAsset(ctx, asset)
 
 	if err != nil {
@@ -19,13 +19,13 @@ func downloadAsset(ctx context.Context, cl *releaseClient, asset *github.Release
 
 	defer rc.Close()
 
-	return writeAsset(rc, output, mode, stdout)
+	return writeAsset(rc, output, mode, stdout, v)
 }
 
 // writeAsset stages the asset in a temporary file and only moves it to the
-// output once fully downloaded, so a failed download never leaves a partial
-// file behind for --if-not-exist to pick up.
-func writeAsset(r io.Reader, output string, mode os.FileMode, stdout io.Writer) error {
+// output once fully downloaded and verified, so a failed download never
+// leaves a partial or rejected file behind for --if-not-exist to pick up.
+func writeAsset(r io.Reader, output string, mode os.FileMode, stdout io.Writer, v verifier) error {
 	var dir string
 
 	if output != "" {
@@ -43,12 +43,14 @@ func writeAsset(r io.Reader, output string, mode os.FileMode, stdout io.Writer) 
 		os.Remove(f.Name())
 	}()
 
-	if _, err := io.Copy(f, r); err != nil {
+	w := v(f)
+
+	if _, err := io.Copy(w, r); err != nil {
 		return fmt.Errorf("download asset: %w", err)
 	}
 
-	if err := f.Close(); err != nil {
-		return fmt.Errorf("close asset: %w", err)
+	if err := w.Close(); err != nil {
+		return fmt.Errorf("verify asset: %w", err)
 	}
 
 	if output == "" {
