@@ -11,9 +11,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v93/github"
 	"github.com/upfluence/cfg/x/cli"
-	"golang.org/x/oauth2"
 )
 
 const assetFmt = "{{ .repo }}-{{ .os }}-{{ .arch }}-{{ .version }}"
@@ -91,13 +90,24 @@ type config struct {
 	IfNotExist  bool           `flag:"if-not-exist" env:"IF_NOT_EXIST"`
 }
 
-func (c *config) client(ctx context.Context) *github.Client {
-	return github.NewClient(
-		oauth2.NewClient(
-			ctx,
-			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.GithubToken}),
-		),
-	)
+func (c *config) releaseClient() (*releaseClient, error) {
+	var opts []github.ClientOptionsFunc
+
+	if c.GithubToken != "" {
+		opts = append(opts, github.WithAuthToken(c.GithubToken))
+	}
+
+	cl, err := github.NewClient(opts...)
+
+	if err != nil {
+		return nil, fmt.Errorf("build github client: %w", err)
+	}
+
+	return &releaseClient{
+		cl:    cl,
+		owner: c.Repository.owner,
+		repo:  c.Repository.repo,
+	}, nil
 }
 
 func (c *config) output(cctx cli.CommandContext) (io.WriteCloser, error) {
@@ -162,11 +172,16 @@ func main() {
 
 					defer w.Close()
 
-					cl := c.client(ctx)
+					cl, err := c.releaseClient()
+
+					if err != nil {
+						return err
+					}
 
 					if scheme := strings.TrimSpace(c.Scheme); scheme == "" || scheme == "latest" {
 						fmt.Fprintf(cctx.Stdout, "Fetching latest release of %v\n", repo)
-						release, err = fetchLatestRelease(cl, repo.owner, repo.repo)
+
+						release, err = cl.latestRelease(ctx)
 					} else {
 						fmt.Fprintf(
 							cctx.Stdout,
@@ -174,7 +189,8 @@ func main() {
 							repo,
 							scheme,
 						)
-						release, err = fetchReleasesByScheme(cl, repo.owner, repo.repo, scheme)
+
+						release, err = cl.releaseByScheme(ctx, scheme)
 					}
 
 					if err != nil {
@@ -187,11 +203,23 @@ func main() {
 						return err
 					}
 
-					fmt.Fprintf(cctx.Stdout, "Release: %s [%s]\n", *release.Name, assetName)
+					fmt.Fprintf(cctx.Stdout, "Release: %s [%s]\n", release.GetName(), assetName)
 
 					for _, asset := range release.Assets {
-						if *asset.Name == assetName {
-							return downloadAsset(w, cl, repo.owner, repo.repo, &asset)
+						if asset.GetName() == assetName {
+							rc, err := cl.openAsset(ctx, asset)
+
+							if err != nil {
+								return err
+							}
+
+							defer rc.Close()
+
+							if _, err := io.Copy(w, rc); err != nil {
+								return fmt.Errorf("write asset: %w", err)
+							}
+
+							return nil
 						}
 					}
 
@@ -210,10 +238,10 @@ func templateAssetName(c *config, r *github.RepositoryRelease) (string, error) {
 		map[string]string{
 			"repo":    c.Repository.repo,
 			"owner":   c.Repository.owner,
-			"tag":     *r.TagName,
+			"tag":     r.TagName,
 			"os":      runtime.GOOS,
 			"arch":    runtime.GOARCH,
-			"version": strings.TrimPrefix(*r.TagName, "v"),
+			"version": strings.TrimPrefix(r.TagName, "v"),
 		},
 	); err != nil {
 		return "", err

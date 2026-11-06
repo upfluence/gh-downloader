@@ -73,7 +73,7 @@ func filterReleases(rs releases, scheme string) releases {
 	}
 
 	for _, release := range rs {
-		r := newTag(*release.TagName)
+		r := newTag(release.TagName)
 
 		if r == nil {
 			continue

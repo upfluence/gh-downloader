@@ -1,13 +1,19 @@
 module github.com/upfluence/gh-downloader
 
-go 1.16
+go 1.26.0
 
 require (
-	github.com/google/go-github v13.0.1-0.20171030212440-724ae38c5030+incompatible
-	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/google/go-github/v93 v93.0.0
 	github.com/stretchr/testify v1.6.1
 	github.com/upfluence/cfg v0.2.3
-	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
+)
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/google/go-querystring v1.2.0 // indirect
+	github.com/pkg/errors v0.8.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c // indirect
 )
 
 replace github.com/coreos/bbolt v1.3.4 => go.etcd.io/bbolt v1.3.4
